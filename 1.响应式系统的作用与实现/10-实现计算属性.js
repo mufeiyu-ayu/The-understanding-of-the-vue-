@@ -84,7 +84,7 @@ function computed(getter) {
             trigger(obj,value)
         }
     })
-    return  {
+    const obj ={
         get value() {
             //  只对脏值时才计算，并将得到的值放到value中
             if(dirty) {
@@ -96,7 +96,7 @@ function computed(getter) {
             return value
         }
     }
-
+    return obj
 }
 // computed计算属性是我们封装的一个代码执行库，getter函数实际就是我们的副作用执行函数，我们用effectFn来包裹
 const sumRes = computed(() => obj.foo + obj.bar)
