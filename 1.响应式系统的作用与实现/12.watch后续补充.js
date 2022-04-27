@@ -129,7 +129,7 @@ function traverse(value,seen = new Set()) {
 // })
 // obj.foo++
 // obj.bar++
-function watch(source,cb) {
+function watch(source,cb,options ={}) {
     let getter
     if(typeof source === 'function') {
         getter = source
@@ -137,34 +137,38 @@ function watch(source,cb) {
         getter = () => traverse(source)
     }
     let oldValue,newValue
+    const job = () => {
+        newValue = effectFn()
+        cb(newValue,oldValue)
+        oldValue = newValue
+    }
     const effectFn = effect(
-        ()=> getter(), // 对用户自己传入得数据进行依赖收集
+        ()=>getter(),
         {
-            lazy:true,
-            scheduler() {
-                // 在scheduler刷新之前执行副作用函数得到的是新值
-                newValue = effectFn()
-                // 将旧值和新值作为回调函数参数
-                cb(newValue,oldValue)
-                // 更新旧值，不然下次会得到错误的旧值
-                oldValue = newValue
-            }
+            lazy: true,
+            scheduler:job
         }
     )
-    // 手动调用副作用函数，拿到的就是旧值
-    oldValue = effectFn() // 1
+
+    if(options.immediate) {
+        job()
+    }else {
+        oldValue = effectFn()
+    }
 }
-debugger;
+
 watch(
     ()=>obj.foo,
     (newValue,oldValue)=>{
         console.log(`新值:${newValue}--旧值:${oldValue}`)
         // console.log('数据发生改变')
+    },
+    {
+        immediate:true
     }
 )
-// 当wacth函数执行完毕之后，会对我们传入得getter中得数据进行收集依赖，由于我们手动调用了oldValue = effectFn()则会拿到这个数据的返回值（旧值：1）
+
 obj.foo++
-// 首先会触发tack函数，由于我们之前清理了activeEffect，所以不执行，然后执行trigger函数（此时obj.foo = 2），然后由于scheduler存在，所以执行scheduler函数 里面执行effectFn => 然后在里面执行fn函数 也就是getter函数()=>obj.foo(这里foo为2,所以重新进行依赖收集),effectFn函数执行完毕拿到fn的返回值为2 也就是newValue => cb(newValue,oldValue)
 
 
 

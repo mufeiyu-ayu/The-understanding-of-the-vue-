@@ -61,7 +61,7 @@ function cleanup(effectFn) {
     // 重置effectFn.deps数组
     effectFn.deps.length = 0
 }
-
+debugger
 effect(function  effectFn1() {
     console.log('effectFn1 执行')
     effect(function effectFn2() {
