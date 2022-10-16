@@ -99,6 +99,7 @@ function computed(getter) {
     return obj
 }
 // computed计算属性是我们封装的一个代码执行库，getter函数实际就是我们的副作用执行函数，我们用effectFn来包裹
+debugger;
 const sumRes = computed(() => obj.foo + obj.bar)
 effect(() => {
     console.log(sumRes.value)
