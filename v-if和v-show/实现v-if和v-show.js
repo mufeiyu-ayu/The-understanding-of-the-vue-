@@ -9,11 +9,12 @@ var Vue = (function () {
         container.innerHTML = template
         const showPoll = new Map()
         const eventPoll = new Map()
-        initData(vm, showPoll)
+        initData(vm, showPoll) // data数据劫持
         initPoll(container, methods, showPoll, eventPoll)
         bindEvent(vm, eventPoll)
         render(vm, showPoll, container)
     }
+    // data数据劫持
     function initData(vm, showPoll) {
         const _data = vm.$data
 
@@ -29,12 +30,12 @@ var Vue = (function () {
             })
         }
     }
+    // 将dom与数据关联
     function initPoll(container, methods, showPoll, eventPoll) {
         const allNodes = container.getElementsByTagName('*')
         let dom = null
         for (let i = 0; i < allNodes.length; i++) {
             dom = allNodes[i]
-
             let vIfData = dom.getAttribute('v-if'),
                 vShowData = dom.getAttribute('v-show'),
                 vEvent = dom.getAttribute('@click')
@@ -58,12 +59,15 @@ var Vue = (function () {
             }
         }
     }
+    // 为节点绑定事件函数
     function bindEvent(vm, eventPoll) {
         for (let [dom, handler] of eventPoll) {
-            vm[handler.name] = handler
+            vm[handler.name] = handler // 挂载到vue实例
             dom.addEventListener('click', vm[handler.name].bind(vm), false)
         }
     }
+
+    // 渲染页面
     function render(vm, showPoll, container) {
         var _data = vm.$data
         var _el = vm.$el
@@ -71,10 +75,12 @@ var Vue = (function () {
             switch (info.type) {
                 case 'if':
                     info.comment = document.createElement('v-if')
+                    // 当为false的时候就替换节点
                     !_data[info.prop] && dom.parentNode.replaceChild(info.comment, dom)
 
                     break
                 case 'show':
+                    // 初始化让dom与属性关联
                     !_data[info.prop] && (dom.style.display = 'none')
                     break
                 default:
@@ -83,6 +89,7 @@ var Vue = (function () {
         }
         _el.appendChild(container)
     }
+    // 更新
     function update(vm, key, showPoll) {
         var _data = vm.$data
         for (let [dom, info] of showPoll) {
