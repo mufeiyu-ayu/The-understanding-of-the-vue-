@@ -1,8 +1,9 @@
 const express = require('express')
 const { readFileSync } = require('fs')
 const { resolve } = require('path')
+const cors = require('cors')
 const app = express()
-
+app.use(cors())
 // 解决跨域
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*')
@@ -25,7 +26,8 @@ app.get('/getStudents', (req, res) => {
     const studentData = JSON.parse(readFileSync(resolve(__dirname, './data/students.json'), 'utf8'))
     res.send(studentData)
 })
-app.listen(8080, (err) => {
+
+app.listen(8331, (err) => {
     if (!err) {
         console.log('地址为http://127.0.0.1:8080')
     }

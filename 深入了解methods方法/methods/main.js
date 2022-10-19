@@ -56,7 +56,9 @@ const List = {
     methods: {
         getData: debounce(async function () {
             // 这种是不好的，因为实例共用这一个方法会出现问题
-            const result = await axios('http://127.0.0.1:8080/getTeachers')
+            const result = await axios('http://127.0.0.1:8331/getTeachers')
+            console.log(Object.prototype.toString.call(result.data))
+
             this.teachers = result.data
         }, 1000)
     }
