@@ -13,14 +13,11 @@ let vm = new Vue({
                 }
             },
             teacher: ['张三', '李四'],
-            students: [
-                { id: 1, name: '小红' },
-                { id: 2, name: '小明' }
-            ]
+            students: [1, 2, 3, 4]
         }
     }
 })
 // console.log(vm.info.a.b)
 // console.log(vm.title)
 // console.log(vm.students.push(1))
-console.log(vm)
+vm.students.push(5)

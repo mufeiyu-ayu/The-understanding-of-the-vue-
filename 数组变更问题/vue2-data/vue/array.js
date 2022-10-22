@@ -8,6 +8,8 @@ ARR_METHODS.forEach((item) => {
     arrMethods[item] = function (...arg) {
         // 执行原来数组相应的方法
         let rt = orginArray[item].apply(this, arg)
+        console.log('数组新方法', arg)
+
         let newArr
         switch (item) {
             case 'push':
