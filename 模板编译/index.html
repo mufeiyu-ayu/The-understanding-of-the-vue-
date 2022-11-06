@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="app" style="color: red;font-size: 20px;">
+    
+    hello     {{name}}
+    <h1>{{ name }}</h1>
+    <ul>
+      <li style="color: green">{{ age }}</li>
+      <li>{{ info.job }}</li>
+    </ul>
+  </div>
+
+  <!-- 你好，{{ name }} 欢迎来到小野森森的课堂
+      <span class="text" style="color: green">{{age}}</span>
+      <p>大家都来学习Vue源码</p> -->
+
+  <script src="dist/umd/vue.js"></script>
+  <script>
+    // options API
+    // 模板: render  >  template   >  html式模板
+    let vm = new Vue({
+      el: '#app',
+      data () {
+        return {
+          name: '小野森森',
+          age: 34,
+          info: {
+            job: 'teacher',
+            students: [
+              {
+                id: 1,
+                name: '小张'
+              },
+              {
+                id: 2,
+                name: '小王'
+              }
+            ]
+          },
+          hobby: ['piano', 'travel', 'film']
+        }
+      }
+    })
+  </script>
+</body>
+</html>
