@@ -1,72 +1,72 @@
-const data = {foo: 1,bar:2}
+const data = { foo: 1, bar: 2 }
 let activeEffect
 const effectStack = []
 const bucket = new WeakMap()
 
-function effect(fn,options ={}) {
-    const effectFn = ()=> {
+function effect(fn, options = {}) {
+    const effectFn = () => {
         cleanup(effectFn)
         activeEffect = effectFn
         effectStack.push(effectFn)
         let res = fn()
         effectStack.pop()
-        activeEffect = effectStack[effectStack.length -1]
+        activeEffect = effectStack[effectStack.length - 1]
         return res
     }
     effectFn.options = options
     effectFn.deps = []
-    if(!options.lazy) {
+    if (!options.lazy) {
         effectFn()
     }
     return effectFn
 }
-const obj = new Proxy(data,{
-    get(target,key) {
-        track(target,key)
+const obj = new Proxy(data, {
+    get(target, key) {
+        track(target, key)
         return target[key]
     },
-    set(target,key,newValue) {
+    set(target, key, newValue) {
         target[key] = newValue
-        trigger(target,key)
+        trigger(target, key)
     }
 })
 
-function  track(target,key) {
-    if(!activeEffect) return
+function track(target, key) {
+    if (!activeEffect) return
     let depMap = bucket.get(target)
-    if(!depMap) {
-        bucket.set(target,(depMap = new Map()))
+    if (!depMap) {
+        bucket.set(target, (depMap = new Map()))
     }
     let deps = depMap.get(key)
-    if(!deps) {
-        depMap.set(key,(deps = new Set()))
+    if (!deps) {
+        depMap.set(key, (deps = new Set()))
     }
     deps.add(activeEffect)
     activeEffect.deps.push(deps)
 }
 
-function trigger(target,key) {
+function trigger(target, key) {
     const depMap = bucket.get(target)
-    if(!depMap) return
+    if (!depMap) return
     const effects = depMap.get(key)
     const effectToRun = new Set()
     effects && effects.forEach(effectFn => {
-        if(activeEffect !== effectFn) {
+        if (activeEffect !== effectFn) {
             effectToRun.add(effectFn)
         }
     })
-    effectToRun.forEach(effectFn =>{
-        if(effectFn.options.scheduler) {
+    effectToRun.forEach(effectFn => {
+        if (effectFn.options.scheduler) {
             // 如果有条度器，则把副作用函数放到scheduer中执行
             effectFn.options.scheduler(effectFn)
-        }else  {
+        } else {
             effectFn()
         }
     })
 }
 
 function cleanup(effectFn) {
-    for(let i = 0; i<effectFn.deps.length;i++) {
+    for (let i = 0; i < effectFn.deps.length; i++) {
         const deps = effectFn.deps[i] // Set
         deps.delete(effectFn)
     }
@@ -77,23 +77,23 @@ function cleanup(effectFn) {
 function computed(getter) {
     let value
     let dirty = true
-    const effectFn = effect(getter,{
-        lazy:true,
+    const effectFn = effect(getter, {
+        lazy: true,
         scheduler() {
             dirty = true
             // 当计算属性依赖的响应式数据变化时，手动调用trigger函数触发响应
-            trigger(obj,value)
+            trigger(obj, value)
         }
     })
-    const obj ={
+    const obj = {
         get value() {
             //  只对脏值时才计算，并将得到的值放到value中
-            if(dirty) {
+            if (dirty) {
                 value = effectFn()
                 dirty = false // 下次如果依赖的数据没有发生改变那么则下次不需要再次加载
             }
             // 当读取value时，手动调用tacj函数进行追踪
-            track(obj,value)
+            track(obj, value)
             return value
         }
     }
@@ -113,12 +113,12 @@ function computed(getter) {
 //     )
 // }
 //
-function traverse(value,seen = new Set()) {
+function traverse(value, seen = new Set()) {
     // 如果读取的数据是原始值，或者已经被读取过，那么return
-    if(typeof value !=='object' || value === null || seen.has(value)) return
+    if (typeof value !== 'object' || value === null || seen.has(value)) return
     seen.add(value) // Set[1] proxy
-    for(const key in value) {
-        traverse(value[key],seen) // 递归调用这个对象的每一个值，因为可能对象的属性还是一个对象。
+    for (const key in value) {
+        traverse(value[key], seen) // 递归调用这个对象的每一个值，因为可能对象的属性还是一个对象。
         // 这样就可以对对象内部所有的属性进行依赖
     }
     return value  // Proxy{foo: 1, bar: 2}
@@ -129,47 +129,47 @@ function traverse(value,seen = new Set()) {
 // })
 // obj.foo++
 // obj.bar++
-function watch(source,cb,options ={}) {
+function watch(source, cb, options = {}) {
     let getter
-    if(typeof source === 'function') {
+    if (typeof source === 'function') {
         getter = source
-    }else {
+    } else {
         getter = () => traverse(source)
     }
-    let oldValue,newValue
+    let oldValue, newValue
     const job = () => {
         newValue = effectFn()
-        cb(newValue,oldValue)
+        cb(newValue, oldValue)
         oldValue = newValue
     }
     const effectFn = effect(
-        ()=>getter(),
+        () => getter(),
         {
             lazy: true,
-            scheduler:job
+            scheduler: job
         }
     )
 
-    if(options.immediate) {
+    if (options.immediate) {
         job()
-    }else {
+    } else {
         oldValue = effectFn()
     }
 }
 
 watch(
-    ()=>obj.foo,
-    (newValue,oldValue)=>{
+    () => obj.foo,
+    (newValue, oldValue) => {
         console.log(`新值:${newValue}--旧值:${oldValue}`)
         // console.log('数据发生改变')
     },
     {
-        immediate:true
+        immediate: true
     }
 )
 
 obj.foo++
-
+// 测试提交
 
 
 
